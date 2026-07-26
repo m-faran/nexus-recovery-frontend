@@ -9,8 +9,8 @@ export function ConnectGuard({ children }: { children: React.ReactNode }) {
 
   if (!isConnected)
     return (
-      <div className="rounded-md border p-6 text-center">
-        <p className="mb-3">Please connect your wallet to continue.</p>
+      <div className="card-surface rounded-xl border border-border bg-card p-8 text-center">
+        <p className="mb-4 text-muted-foreground">Please connect your wallet to continue.</p>
         <div className="flex justify-center">
           <ConnectButton />
         </div>

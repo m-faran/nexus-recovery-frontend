@@ -2,9 +2,12 @@
 
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
+import { RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { StatItem } from "@/components/shared/stat-item";
 import { useClaimActions } from "@/hooks/use-claim-actions";
 import { useContractTx } from "@/hooks/use-contract-tx";
 import { useHasConfig } from "@/hooks/use-has-config";
@@ -104,21 +107,21 @@ export function OwnerDashboard() {
 
   if (!address) {
     return (
-      <div className="rounded-lg border border-dashed border-muted p-8 text-center text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-muted-foreground">
         Connect your wallet to view the owner dashboard.
       </div>
     );
   }
 
   if (hasConfigLoading || configLoading) {
-    return <div>Loading owner dashboard…</div>;
+    return <div className="text-(--header-muted)">Loading owner dashboard…</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Owner Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Manage your recovery configuration, AVAX vault, and registered tokens.</p>
+      <div className="border-b border-border pb-6">
+        <h1 className="text-3xl font-bold tracking-tight text-(--header-foreground)">Owner Dashboard</h1>
+        <p className="mt-2 text-(--header-muted)">Manage your recovery configuration, AVAX vault, and registered tokens.</p>
       </div>
 
       {!hasConfig ? (
@@ -130,58 +133,53 @@ export function OwnerDashboard() {
               <CardTitle>Recovery Overview</CardTitle>
               <CardDescription>Current configuration and claim state.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Owner</p>
-                  <p className="font-medium break-words">{address}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Vault balance</p>
-                  <p className="font-medium">{balanceLoading ? "Loading…" : formatAvax(balance ?? BigInt(0))} AVAX</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Last proof of life</p>
-                  <p className="font-medium">{config ? formatTimestamp(config.lastProofOfLife) : "—"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Inactivity period</p>
-                  <p className="font-medium">
-                    {config ? `${formatDuration(config.inactivityPeriod)}` : "—"}
-                  </p>
-                </div>
+            <CardContent className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <StatItem label="Owner" value={address} className="sm:col-span-2 lg:col-span-3" />
+                <StatItem
+                  label="Vault balance"
+                  value={`${balanceLoading ? "Loading…" : formatAvax(balance ?? BigInt(0))} AVAX`}
+                />
+                <StatItem
+                  label="Last proof of life"
+                  value={config ? formatTimestamp(config.lastProofOfLife) : "—"}
+                />
+                <StatItem label="Claim state" value={ClaimState[claimState]} />
+                <StatItem
+                  label="Inactivity period"
+                  value={config ? formatDuration(config.inactivityPeriod) : "—"}
+                />
+                <StatItem
+                  label="Grace period"
+                  value={config ? formatDuration(config.gracePeriod) : "—"}
+                  className="sm:col-span-2 lg:col-span-1"
+                />
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Grace period</p>
-                  <p className="font-medium">{config ? formatDuration(config.gracePeriod) : "—"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Claim state</p>
-                  <p className="font-medium">{ClaimState[claimState]}</p>
-                </div>
-              </div>
+              <Separator />
 
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div>
-                  <p className="text-sm text-muted-foreground">Heirs</p>
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Heirs</p>
                   <div className="space-y-2">
                     {config?.heirs?.map((heir: string, index: number) => (
-                      <div key={heir + index} className="rounded-lg border p-3">
-                        <p className="font-medium break-words">{heir}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Share: {splitToPercent(Number(config.splits?.[index] ?? 0))}
-                        </p>
+                      <div
+                        key={heir + index}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-input bg-muted p-3.5"
+                      >
+                        <p className="break-words font-medium text-foreground">{heir}</p>
+                        <Badge variant="secondary" className="shrink-0">
+                          {splitToPercent(Number(config.splits?.[index] ?? 0))}
+                        </Badge>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="space-y-3 rounded-lg border p-4">
+                <div className="space-y-3 rounded-lg border border-primary/25 bg-primary/5 p-4">
                   {claimState === ClaimState.Pending ? (
                     <>
-                      <p className="text-sm text-muted-foreground">Grace remaining</p>
-                      <p className="font-medium">
+                      <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Grace remaining</p>
+                      <p className="text-2xl font-bold tabular-nums text-foreground">
                         {graceCountdown !== null ? (
                           <CountdownDisplay seconds={graceCountdown} />
                         ) : (
@@ -194,8 +192,8 @@ export function OwnerDashboard() {
                     </>
                   ) : (
                     <>
-                      <p className="text-sm text-muted-foreground">Inactivity countdown</p>
-                      <p className="font-medium">
+                      <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Inactivity countdown</p>
+                      <p className="text-2xl font-bold tabular-nums text-foreground">
                         {inactivityCountdown !== null ? (
                           <CountdownDisplay seconds={inactivityCountdown} />
                         ) : (
@@ -224,14 +222,27 @@ export function OwnerDashboard() {
                   <CardDescription>Reset the timer or delete your recovery configuration.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button type="button" disabled={isPending || claimState === ClaimState.Pending} onClick={handleResetTimer}>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    disabled={isPending || claimState === ClaimState.Pending}
+                    onClick={handleResetTimer}
+                  >
+                    <RefreshCw size={14} />
                     {isPending ? "Resetting…" : "Reset Proof-of-Life"}
                   </Button>
-                  <Button type="button" variant="destructive" disabled={isPending} onClick={handleDeleteRecovery}>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="w-full"
+                    disabled={isPending}
+                    onClick={handleDeleteRecovery}
+                  >
+                    <Trash2 size={14} />
                     {isPending ? "Deleting…" : "Delete Recovery"}
                   </Button>
                   {claimState === ClaimState.Pending ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="rounded-lg border border-destructive/25 bg-destructive/5 p-3 text-sm text-muted-foreground">
                       Configuration changes are blocked while a claim is pending.
                     </p>
                   ) : null}

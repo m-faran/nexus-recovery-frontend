@@ -41,20 +41,24 @@ export function DepositAvaxForm() {
   };
 
   return (
-    <Card className="card-surface">
+    <Card>
       <CardHeader>
-        <CardTitle>Deposit AVAX</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <ArrowUp size={18} className="text-primary" />
+          Deposit AVAX
+        </CardTitle>
         <CardDescription>Send AVAX to your recovery vault for later release to heirs.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <form className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end" onSubmit={handleSubmit}>
           <div>
-            <Label htmlFor="deposit-avax">Amount</Label>
+            <Label htmlFor="deposit-avax">Amount (AVAX)</Label>
             <Input
               id="deposit-avax"
               type="number"
               min="0"
               step="0.001"
+              placeholder="0.0"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
             />
@@ -62,8 +66,8 @@ export function DepositAvaxForm() {
           <Button type="submit" disabled={!canSubmit || isPending}>
             {isPending ? "Depositing…" : (
               <>
-                <ArrowUp className="mr-2" size={16} />
-                Deposit AVAX
+                <ArrowUp size={16} />
+                Deposit
               </>
             )}
           </Button>
