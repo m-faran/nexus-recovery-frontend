@@ -3,10 +3,10 @@ import nexusRecoveryVaultJson from "../../nexusrecoveryvaultabi.json";
 import type { Address } from "viem";
 
 export const NEXUS_RECOVERY_ADDRESS = (process.env
-  .NEXT_PUBLIC_NEXUS_RECOVERY_ADDRESS ?? "") as Address;
+  .NEXT_PUBLIC_NEXUS_RECOVERY_ADDRESS || "0x91b730974eb4488610d2e53089911a5810ff16be") as Address;
 
 export const NEXUS_RECOVERY_VAULT_ADDRESS = (process.env
-  .NEXT_PUBLIC_NEXUS_RECOVERY_VAULT_ADDRESS ?? "") as Address;
+  .NEXT_PUBLIC_NEXUS_RECOVERY_VAULT_ADDRESS || "0x2ce43f3854832813f1cf7fba38838f5ba2927e1a") as Address;
 
 export const nexusRecoveryAbi = (nexusRecoveryJson as any).abi ?? (nexusRecoveryJson as any);
 export const nexusRecoveryVaultAbi = (nexusRecoveryVaultJson as any).abi ?? (nexusRecoveryVaultJson as any);
