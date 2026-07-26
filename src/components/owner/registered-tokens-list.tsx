@@ -33,7 +33,7 @@ export function RegisteredTokensList({
   };
 
   return (
-    <Card className="card-surface">
+    <Card>
       <CardHeader>
         <CardTitle>Registered Tokens</CardTitle>
         <CardDescription>Tokens currently configured for recovery.</CardDescription>
@@ -42,10 +42,10 @@ export function RegisteredTokensList({
         {tokens && tokens.length > 0 ? (
           <div className="grid gap-3">
             {tokens.map((token) => (
-              <div key={token.tokenAddress} className="rounded-lg border p-4">
+              <div key={token.tokenAddress} className="rounded-lg border border-input bg-muted p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium">{token.tokenAddress}</p>
+                    <p className="break-words font-medium text-foreground">{token.tokenAddress}</p>
                     <p className="text-sm text-muted-foreground">Amount: {token.amount.toString()}</p>
                   </div>
                   <Button
@@ -55,7 +55,7 @@ export function RegisteredTokensList({
                     disabled={isPending}
                     onClick={() => handleDeregister(token.tokenAddress)}
                   >
-                    <Trash2 className="mr-2" size={14} />
+                    <Trash2 size={14} />
                     Deregister
                   </Button>
                 </div>

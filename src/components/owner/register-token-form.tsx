@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, Coins } from "lucide-react";
 import { useAccount, useContractRead } from "wagmi";
 import { parseUnits } from "viem";
 import { Button } from "@/components/ui/button";
@@ -128,9 +128,12 @@ export function RegisterTokenForm() {
   };
 
   return (
-    <Card className="card-surface">
+    <Card>
       <CardHeader>
-        <CardTitle>Register ERC-20 Token</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Coins size={18} className="text-primary" />
+          Register ERC-20 Token
+        </CardTitle>
         <CardDescription>
           Approve the recovery contract, then register a token for claim distribution.
         </CardDescription>
@@ -140,34 +143,39 @@ export function RegisterTokenForm() {
           <Label htmlFor="token-address">Token Address</Label>
           <Input
             id="token-address"
+            placeholder="0x…"
             value={tokenAddress}
             onChange={(event) => setTokenAddress(event.target.value)}
           />
         </div>
-        <div>
-          <Label htmlFor="approve-amount">Approval Amount</Label>
-          <Input
-            id="approve-amount"
-            type="text"
-            value={approveAmount}
-            onChange={(event) => setApproveAmount(event.target.value)}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="approve-amount">Approval Amount</Label>
+            <Input
+              id="approve-amount"
+              type="text"
+              placeholder="0.0"
+              value={approveAmount}
+              onChange={(event) => setApproveAmount(event.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="register-amount">Register Amount</Label>
+            <Input
+              id="register-amount"
+              type="text"
+              placeholder="0.0"
+              value={registerAmount}
+              onChange={(event) => setRegisterAmount(event.target.value)}
+            />
+          </div>
         </div>
-        <div>
-          <Label htmlFor="register-amount">Register Amount</Label>
-          <Input
-            id="register-amount"
-            type="text"
-            value={registerAmount}
-            onChange={(event) => setRegisterAmount(event.target.value)}
-          />
-          <p className="text-sm text-muted-foreground">Decimals: {decimals}</p>
-        </div>
+        <p className="text-sm text-muted-foreground">Token decimals: <span className="font-semibold text-foreground">{decimals}</span></p>
         <div className="flex flex-wrap gap-3">
-          <Button type="button" disabled={!canApprove || isPending} onClick={handleApprove} variant="secondary">
+          <Button type="button" disabled={!canApprove || isPending} onClick={handleApprove} variant="outline">
             {isPending ? "Approving…" : (
               <>
-                <Check className="mr-2" size={14} />
+                <Check size={14} />
                 Approve
               </>
             )}
@@ -175,14 +183,16 @@ export function RegisterTokenForm() {
           <Button type="button" disabled={!canRegister || isPending} onClick={handleRegister}>
             {isPending ? "Registering…" : (
               <>
-                <Plus className="mr-2" size={14} />
+                <Plus size={14} />
                 Register Token
               </>
             )}
           </Button>
         </div>
         {approved ? (
-          <p className="text-sm text-green-600">Token allowance is sufficient to register this amount.</p>
+          <p className="rounded-lg border border-primary/25 bg-primary/5 p-3 text-sm font-medium text-primary">
+            Token allowance is sufficient to register this amount.
+          </p>
         ) : (
           <p className="text-sm text-muted-foreground">Approve first, then register the token.</p>
         )}

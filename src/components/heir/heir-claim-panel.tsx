@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
+import { Search, PlayCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CountdownDisplay } from "@/components/shared/countdown-display";
+import { StatItem } from "@/components/shared/stat-item";
 import { useClaimActions } from "@/hooks/use-claim-actions";
 import { useContractTx } from "@/hooks/use-contract-tx";
 import { useHasConfig } from "@/hooks/use-has-config";
@@ -102,16 +105,19 @@ export function HeirClaimPanel() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Heir Portal</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="border-b border-border pb-6">
+        <h1 className="text-3xl font-bold tracking-tight text-(--header-foreground)">Heir Portal</h1>
+        <p className="mt-2 text-(--header-muted)">
           Check owner recovery configuration and initiate or execute claims when eligible.
         </p>
       </div>
 
-      <Card className="card-surface">
+      <Card>
         <CardHeader>
-          <CardTitle>Lookup Owner</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Search size={18} className="text-primary" />
+            Lookup Owner
+          </CardTitle>
           <CardDescription>Enter the wallet address of the recovery owner.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
@@ -119,78 +125,65 @@ export function HeirClaimPanel() {
             <Label htmlFor="owner-address">Owner Address</Label>
             <Input
               id="owner-address"
+              placeholder="0x…"
               value={ownerAddress}
               onChange={(event) => setOwnerAddress(event.target.value)}
             />
           </div>
-          <p className="text-sm text-muted-foreground">{heirMessage}</p>
+          <p
+            className={
+              isHeir
+                ? "flex items-center gap-1.5 text-sm font-medium text-primary"
+                : "text-sm text-muted-foreground"
+            }
+          >
+            {isHeir ? <CheckCircle2 size={14} /> : null}
+            {heirMessage}
+          </p>
         </CardContent>
       </Card>
 
       {normalizedOwner && hasConfig ? (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="space-y-6">
-            <Card className="card-surface">
+            <Card>
               <CardHeader>
                 <CardTitle>Owner Recovery Details</CardTitle>
                 <CardDescription>Current config and claim progress.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Last proof of life</p>
-                    <p className="font-medium">{formatTimestamp(config?.lastProofOfLife ?? BigInt(0))}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Claim state</p>
-                    <p className="font-medium">{ClaimState[claimState]}</p>
-                  </div>
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Inactivity period</p>
-                    <p className="font-medium">{config ? formatDuration(config.inactivityPeriod) : "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Grace period</p>
-                    <p className="font-medium">{config ? formatDuration(config.gracePeriod) : "—"}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Your heir share</p>
-                  <p className="font-medium">
-                    {isHeir && heirs
-                      ? `${splitToPercent(Number(splits?.[heirs.findIndex((h) => h.toLowerCase() === address?.toLowerCase()) ?? 0] ?? 0))}`
-                      : "—"}
-                  </p>
+              <CardContent className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <StatItem label="Last proof of life" value={formatTimestamp(config?.lastProofOfLife ?? BigInt(0))} />
+                  <StatItem label="Claim state" value={ClaimState[claimState]} />
+                  <StatItem label="Inactivity period" value={config ? formatDuration(config.inactivityPeriod) : "—"} />
+                  <StatItem label="Grace period" value={config ? formatDuration(config.gracePeriod) : "—"} />
+                  <StatItem
+                    label="Your heir share"
+                    value={
+                      isHeir && heirs
+                        ? `${splitToPercent(Number(splits?.[heirs.findIndex((h) => h.toLowerCase() === address?.toLowerCase()) ?? 0] ?? 0))}`
+                        : "—"
+                    }
+                    className="sm:col-span-2"
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="card-surface">
+            <Card>
               <CardHeader>
                 <CardTitle>Claim Actions</CardTitle>
                 <CardDescription>Initiate or execute a claim on behalf of the owner.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Initiate claim</p>
-                    <p className="font-medium">
-                      {canInitiate ? "Eligible" : "Not eligible yet"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Execute claim</p>
-                    <p className="font-medium">
-                      {canExecute ? "Grace period elapsed" : "Not ready"}
-                    </p>
-                  </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <StatItem label="Initiate claim" value={canInitiate ? "Eligible" : "Not eligible yet"} />
+                  <StatItem label="Execute claim" value={canExecute ? "Grace period elapsed" : "Not ready"} />
                 </div>
                 {claimState === ClaimState.Pending && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Grace countdown</p>
-                    <p className="font-medium">
+                  <div className="rounded-lg border border-primary/25 bg-primary/5 p-4">
+                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Grace countdown</p>
+                    <p className="text-2xl font-bold tabular-nums text-foreground">
                       {graceCountdown !== null ? (
                         <CountdownDisplay seconds={graceCountdown} />
                       ) : (
@@ -200,18 +193,20 @@ export function HeirClaimPanel() {
                   </div>
                 )}
                 {claimState === ClaimState.None && inactivityCountdown !== null ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Inactivity countdown</p>
-                    <p className="font-medium">
+                  <div className="rounded-lg border border-primary/25 bg-primary/5 p-4">
+                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Inactivity countdown</p>
+                    <p className="text-2xl font-bold tabular-nums text-foreground">
                       <CountdownDisplay seconds={inactivityCountdown} />
                     </p>
                   </div>
                 ) : null}
                 <div className="flex flex-wrap gap-3">
                   <Button type="button" variant="secondary" disabled={!canInitiate || isPending} onClick={handleInitiate}>
+                    <PlayCircle size={14} />
                     {isPending ? "Submitting…" : "Initiate Claim"}
                   </Button>
                   <Button type="button" disabled={!canExecute || isPending} onClick={handleExecute}>
+                    <CheckCircle2 size={14} />
                     {isPending ? "Submitting…" : "Execute Claim"}
                   </Button>
                 </div>
@@ -220,24 +215,21 @@ export function HeirClaimPanel() {
           </div>
 
           <div className="space-y-6">
-            <Card className="card-surface">
+            <Card>
               <CardHeader>
                 <CardTitle>Owner Vault</CardTitle>
                 <CardDescription>Native AVAX and registered ERC-20 balances.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">AVAX in vault</p>
-                  <p className="font-medium">{formatAvax(balance ?? BigInt(0))} AVAX</p>
-                </div>
+              <CardContent className="space-y-4">
+                <StatItem label="AVAX in vault" value={`${formatAvax(balance ?? BigInt(0))} AVAX`} />
                 <Separator />
                 <div>
-                  <p className="text-sm text-muted-foreground">Registered tokens</p>
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Registered tokens</p>
                   {tokens && tokens.length > 0 ? (
                     <ul className="space-y-2">
                       {tokens.map((token) => (
-                        <li key={token.tokenAddress} className="rounded-lg border p-3">
-                          <p className="font-medium break-words">{token.tokenAddress}</p>
+                        <li key={token.tokenAddress} className="rounded-lg border border-input bg-muted p-3">
+                          <p className="break-words font-medium text-foreground">{token.tokenAddress}</p>
                           <p className="text-sm text-muted-foreground">Amount: {token.amount.toString()}</p>
                         </li>
                       ))}

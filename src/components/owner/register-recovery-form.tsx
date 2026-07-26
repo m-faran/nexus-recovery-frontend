@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Check, Trash2 } from "lucide-react";
+import { Plus, Check, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { useContractTx } from "@/hooks/use-contract-tx";
 import { NEXUS_RECOVERY_ADDRESS, nexusRecoveryAbi } from "@/lib/contracts";
 import { humanToSeconds } from "@/lib/time";
@@ -81,21 +82,28 @@ export function RegisterRecoveryForm() {
     }
   };
 
+  const splitPercent = Math.min(100, (splitTotal / 10000) * 100);
+
   return (
-    <Card className="card-surface space-y-4">
+    <Card>
       <CardHeader>
         <CardTitle>Register Recovery</CardTitle>
         <CardDescription>
           Create your recovery configuration using heir addresses and basis-point splits.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4">
+      <CardContent className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid gap-3">
             {heirs.map((item, index) => (
-              <div key={index} className="grid gap-2 rounded-lg border p-4">
+              <div key={index} className="grid gap-3 rounded-lg border border-input bg-muted p-4">
                 <div className="flex items-center justify-between gap-4">
-                  <Label className="font-semibold">Heir {index + 1}</Label>
+                  <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {index + 1}
+                    </span>
+                    Heir {index + 1}
+                  </span>
                   {heirs.length > 1 ? (
                     <Button
                       type="button"
@@ -103,16 +111,17 @@ export function RegisterRecoveryForm() {
                       size="sm"
                       onClick={() => removeHeir(index)}
                     >
-                      <Trash2 className="mr-2" size={14} />
+                      <Trash2 size={14} />
                       Remove
                     </Button>
                   ) : null}
                 </div>
-                <div className="grid gap-2 sm:grid-cols-[1fr_132px]">
+                <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
                   <div>
                     <Label htmlFor={`heir-${index}`}>Address</Label>
                     <Input
                       id={`heir-${index}`}
+                      placeholder="0x…"
                       value={item.address}
                       onChange={(event) => updateHeir(index, "address", event.target.value)}
                     />
@@ -133,10 +142,12 @@ export function RegisterRecoveryForm() {
             ))}
           </div>
 
-          <Button type="button" variant="secondary" onClick={addHeir} disabled={heirs.length >= MAX_HEIRS}>
-            <Plus className="mr-2" size={14} />
+          <Button type="button" variant="outline" onClick={addHeir} disabled={heirs.length >= MAX_HEIRS}>
+            <Plus size={14} />
             Add Heir
           </Button>
+
+          <Separator />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -185,17 +196,36 @@ export function RegisterRecoveryForm() {
 
           <Separator />
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Split total:</p>
-              <p className={splitTotal === 10000 ? "text-sm text-foreground" : "text-sm text-destructive"}>
-                {splitTotal}/10000
-              </p>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Users size={18} className="text-muted-foreground" />
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Split total</p>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="h-1.5 w-28 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        splitTotal === 10000 ? "bg-primary" : "bg-destructive",
+                      )}
+                      style={{ width: `${splitPercent}%` }}
+                    />
+                  </div>
+                  <p
+                    className={cn(
+                      "text-sm font-semibold",
+                      splitTotal === 10000 ? "text-foreground" : "text-destructive",
+                    )}
+                  >
+                    {splitTotal}/10000
+                  </p>
+                </div>
+              </div>
             </div>
             <Button type="submit" disabled={!isValid || isPending}>
               {isPending ? "Submitting…" : (
                 <>
-                  <Check className="mr-2" size={14} />
+                  <Check size={14} />
                   Register Recovery
                 </>
               )}
