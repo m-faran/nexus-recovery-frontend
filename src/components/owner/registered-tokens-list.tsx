@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Trash2 } from "lucide-react";
 import { useContractTx } from "@/hooks/use-contract-tx";
 import { NEXUS_RECOVERY_ADDRESS, nexusRecoveryAbi } from "@/lib/contracts";
+import { RegisteredTokenItem } from "@/components/owner/registered-token-item";
 
 export function RegisteredTokensList({
   tokens,
@@ -44,10 +45,7 @@ export function RegisteredTokensList({
             {tokens.map((token) => (
               <div key={token.tokenAddress} className="rounded-lg border border-input bg-muted p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="break-words font-medium text-foreground">{token.tokenAddress}</p>
-                    <p className="text-sm text-muted-foreground">Amount: {token.amount.toString()}</p>
-                  </div>
+                  <RegisteredTokenItem tokenAddress={token.tokenAddress} amount={token.amount} />
                   <Button
                     type="button"
                     variant="destructive"

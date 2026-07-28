@@ -16,6 +16,7 @@ import { useContractTx } from "@/hooks/use-contract-tx";
 import { useHasConfig } from "@/hooks/use-has-config";
 import { useRecoveryConfig } from "@/hooks/use-recovery-config";
 import { useRegisteredTokens } from "@/hooks/use-registered-tokens";
+import { RegisteredTokenItem } from "@/components/owner/registered-token-item";
 import { useVaultBalance } from "@/hooks/use-vault-balance";
 import { useIsHeir } from "@/hooks/use-is-heir";
 import { useCountdown } from "@/hooks/use-countdown";
@@ -229,8 +230,7 @@ export function HeirClaimPanel() {
                     <ul className="space-y-2">
                       {tokens.map((token) => (
                         <li key={token.tokenAddress} className="rounded-lg border border-input bg-muted p-3">
-                          <p className="break-words font-medium text-foreground">{token.tokenAddress}</p>
-                          <p className="text-sm text-muted-foreground">Amount: {token.amount.toString()}</p>
+                          <RegisteredTokenItem tokenAddress={token.tokenAddress} amount={token.amount} />
                         </li>
                       ))}
                     </ul>

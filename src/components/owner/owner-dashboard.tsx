@@ -164,14 +164,14 @@ export function OwnerDashboard() {
                   <div className="space-y-2">
                     {config?.heirs?.map((heir: string, index: number) => (
                       <div
-                        key={heir + index}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-input bg-muted p-3.5"
-                      >
-                        <p className="break-words font-medium text-foreground">{heir}</p>
-                        <Badge variant="secondary" className="shrink-0">
-                          {splitToPercent(Number(config.splits?.[index] ?? 0))}
-                        </Badge>
-                      </div>
+                          key={heir + index}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-input bg-muted p-3.5"
+                        >
+                          <p className="min-w-0 break-all font-medium text-foreground">{heir}</p>
+                          <Badge variant="secondary" className="shrink-0">
+                            {splitToPercent(Number(config.splits?.[index] ?? 0))}
+                          </Badge>
+                        </div>
                     ))}
                   </div>
                 </div>
