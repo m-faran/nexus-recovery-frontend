@@ -18,6 +18,22 @@ export function RegisteredTokenItem({
     query: { enabled: !!tokenAddress },
   });
 
+  const { data: nameData } = useContractRead({
+    address: tokenAddress as any,
+    abi: erc20Abi as any,
+    functionName: "name",
+    query: { enabled: !!tokenAddress },
+  });
+
+  const { data: symbolData } = useContractRead({
+    address: tokenAddress as any,
+    abi: erc20Abi as any,
+    functionName: "symbol",
+    query: { enabled: !!tokenAddress },
+  });
+
+  const name = typeof nameData === "string" && nameData.trim() ? nameData : "Unknown token";
+  const symbol = typeof symbolData === "string" && symbolData.trim() ? symbolData : "";
   const decimals = Number(decimalsData ?? 18);
 
   let display = "";
@@ -29,7 +45,11 @@ export function RegisteredTokenItem({
 
   return (
     <div className="min-w-0">
-      <p className="break-all font-medium text-foreground">{tokenAddress}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="break-all font-medium text-foreground">{name}</p>
+        {symbol ? <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">({symbol})</span> : null}
+      </div>
+      <p className="mt-1 break-all text-xs text-muted-foreground">{tokenAddress}</p>
       <p className="text-sm text-muted-foreground">Amount: {display}</p>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
-import { RefreshCw, Trash2 } from "lucide-react";
+import { RefreshCw, ShieldOff, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import { RegisteredTokensList } from "@/components/owner/registered-tokens-list"
 import { CountdownDisplay } from "@/components/shared/countdown-display";
 import { formatAvax, formatTimestamp, formatDuration, splitToPercent } from "@/lib/time";
 import { ClaimState, NEXUS_RECOVERY_ADDRESS, nexusRecoveryAbi } from "@/lib/contracts";
+import { erc20Abi } from "@/lib/abis/erc20";
 
 export function OwnerDashboard() {
   const { address } = useAccount();
@@ -81,6 +82,29 @@ export function OwnerDashboard() {
           successMessage: "Recovery configuration deleted.",
         },
       );
+    } catch {
+      // handled by toast
+    }
+  };
+
+  const handleRevokeAll = async () => {
+    if (!tokens?.length) return;
+
+    try {
+      for (const token of tokens) {
+        await execute(
+          {
+            address: token.tokenAddress as any,
+            abi: erc20Abi as any,
+            functionName: "approve",
+            args: [NEXUS_RECOVERY_ADDRESS as any, BigInt(0)],
+          },
+          {
+            pendingMessage: `Revoking approval for ${token.tokenAddress}…`,
+            successMessage: "Token approvals revoked.",
+          },
+        );
+      }
     } catch {
       // handled by toast
     }
@@ -230,6 +254,16 @@ export function OwnerDashboard() {
                   >
                     <RefreshCw size={14} />
                     {isPending ? "Resetting…" : "Reset Proof-of-Life"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    disabled={isPending || !tokens?.length}
+                    onClick={handleRevokeAll}
+                  >
+                    <ShieldOff size={14} />
+                    {isPending ? "Revoking…" : "Revoke All"}
                   </Button>
                   <Button
                     type="button"
