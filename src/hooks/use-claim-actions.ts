@@ -8,11 +8,12 @@ export function useClaimState(owner?: `0x${string}`) {
   const { data, isLoading, isError } = useContractRead({
     address: NEXUS_RECOVERY_ADDRESS as any,
     abi: nexusRecoveryAbi as any,
-    functionName: "getClaimState",
+    functionName: "getClaimInitiatedAt",
     args: owner ? [owner] : undefined,
   });
 
-  return { claimState: data as number | undefined, isLoading, isError };
+  const claimState = data !== undefined ? ((data as bigint) > 0n ? ClaimState.Pending : ClaimState.None) : undefined;
+  return { claimState, isLoading, isError };
 }
 
 export function useClaimActions(config?: RecoveryConfig) {
@@ -34,11 +35,13 @@ export function useClaimActions(config?: RecoveryConfig) {
     const inactivityElapsed = now >= inactivityTarget;
     const graceElapsed = now >= graceTarget;
 
+    const claimState = config.claimInitiatedAt > 0n ? ClaimState.Pending : ClaimState.None;
+
     return {
       canInitiate:
-        config.claimState === ClaimState.None && inactivityElapsed,
+        claimState === ClaimState.None && inactivityElapsed,
       canExecute:
-        config.claimState === ClaimState.Pending && graceElapsed,
+        claimState === ClaimState.Pending && graceElapsed,
       inactivityTarget,
       graceTarget,
       inactivityElapsed,

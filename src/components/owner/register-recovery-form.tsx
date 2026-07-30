@@ -7,16 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn, isValidAddress } from "@/lib/utils";
 import { useContractTx } from "@/hooks/use-contract-tx";
 import { NEXUS_RECOVERY_ADDRESS, nexusRecoveryAbi } from "@/lib/contracts";
 import { humanToSeconds } from "@/lib/time";
 
 const MAX_HEIRS = 10;
-
-function isValidAddress(address: string) {
-  return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
-}
 
 export function RegisterRecoveryForm() {
   const { execute, isPending } = useContractTx();

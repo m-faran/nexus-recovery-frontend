@@ -11,10 +11,8 @@ import { Label } from "@/components/ui/label";
 import { useContractTx } from "@/hooks/use-contract-tx";
 import { NEXUS_RECOVERY_ADDRESS, nexusRecoveryAbi } from "@/lib/contracts";
 import { erc20Abi } from "@/lib/abis/erc20";
+import { isValidAddress } from "@/lib/utils";
 
-function isValidAddress(address: string) {
-  return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
-}
 
 export function RegisterTokenForm() {
   const { address } = useAccount();

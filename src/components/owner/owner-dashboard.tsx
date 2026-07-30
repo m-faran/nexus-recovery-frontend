@@ -10,11 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { StatItem } from "@/components/shared/stat-item";
 import { useClaimActions } from "@/hooks/use-claim-actions";
 import { useContractTx } from "@/hooks/use-contract-tx";
-import { useHasConfig } from "@/hooks/use-has-config";
+
 import { useRecoveryConfig } from "@/hooks/use-recovery-config";
 import { useRegisteredTokens } from "@/hooks/use-registered-tokens";
 import { useVaultBalance } from "@/hooks/use-vault-balance";
 import { useCountdown } from "@/hooks/use-countdown";
+import { UpdateConfigurationDialog } from "@/components/owner/update-configuration-dialog";
 import { RegisterRecoveryForm } from "@/components/owner/register-recovery-form";
 import { DepositAvaxForm } from "@/components/owner/deposit-avax-form";
 import { WithdrawAvaxForm } from "@/components/owner/withdraw-avax-form";
@@ -27,8 +28,8 @@ import { erc20Abi } from "@/lib/abis/erc20";
 
 export function OwnerDashboard() {
   const { address } = useAccount();
-  const { hasConfig, isLoading: hasConfigLoading } = useHasConfig(address as any);
   const { config, isLoading: configLoading } = useRecoveryConfig(address as any);
+  const hasConfig = Boolean(config?.owner && config.owner !== "0x0000000000000000000000000000000000000000");
   const { tokens, isLoading: tokensLoading } = useRegisteredTokens(address as any);
   const { balance, isLoading: balanceLoading } = useVaultBalance(address as any);
   const claimActions = useClaimActions(config);
@@ -36,7 +37,7 @@ export function OwnerDashboard() {
 
   const claimState = useMemo(() => {
     if (!config) return ClaimState.None;
-    return Number(config.claimState) as ClaimState;
+    return config.claimInitiatedAt > 0n ? ClaimState.Pending : ClaimState.None;
   }, [config]);
 
   const inactivityCountdown = useCountdown(
@@ -137,7 +138,7 @@ export function OwnerDashboard() {
     );
   }
 
-  if (hasConfigLoading || configLoading) {
+  if (configLoading) {
     return <div className="text-(--header-muted)">Loading owner dashboard…</div>;
   }
 
@@ -154,8 +155,15 @@ export function OwnerDashboard() {
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Recovery Overview</CardTitle>
-              <CardDescription>Current configuration and claim state.</CardDescription>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle>Recovery Overview</CardTitle>
+                  <CardDescription>Current configuration and claim state.</CardDescription>
+                </div>
+                {claimState !== ClaimState.Pending && (
+                  <UpdateConfigurationDialog config={config!} />
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

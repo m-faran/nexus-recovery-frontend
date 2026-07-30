@@ -13,7 +13,7 @@ import { CountdownDisplay } from "@/components/shared/countdown-display";
 import { StatItem } from "@/components/shared/stat-item";
 import { useClaimActions } from "@/hooks/use-claim-actions";
 import { useContractTx } from "@/hooks/use-contract-tx";
-import { useHasConfig } from "@/hooks/use-has-config";
+import { isValidAddress } from "@/lib/utils";
 import { useRecoveryConfig } from "@/hooks/use-recovery-config";
 import { useRegisteredTokens } from "@/hooks/use-registered-tokens";
 import { RegisteredTokenItem } from "@/components/owner/registered-token-item";
@@ -23,16 +23,12 @@ import { useCountdown } from "@/hooks/use-countdown";
 import { formatAvax, formatDuration, formatTimestamp, splitToPercent } from "@/lib/time";
 import { ClaimState, NEXUS_RECOVERY_ADDRESS, nexusRecoveryAbi } from "@/lib/contracts";
 
-function isValidAddress(address: string) {
-  return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
-}
-
 export function HeirClaimPanel() {
   const { address } = useAccount();
   const [ownerAddress, setOwnerAddress] = useState("");
   const normalizedOwner = isValidAddress(ownerAddress) ? ownerAddress.trim() : undefined;
-  const { hasConfig } = useHasConfig(normalizedOwner as any);
   const { config } = useRecoveryConfig(normalizedOwner as any);
+  const hasConfig = Boolean(config?.owner && config.owner !== "0x0000000000000000000000000000000000000000");
   const { tokens } = useRegisteredTokens(normalizedOwner as any);
   const { balance } = useVaultBalance(normalizedOwner as any);
   const { isHeir, heirs, splits } = useIsHeir(normalizedOwner as any, address as any);
@@ -41,7 +37,7 @@ export function HeirClaimPanel() {
 
   const claimState = useMemo(() => {
     if (!config) return ClaimState.None;
-    return Number(config.claimState) as ClaimState;
+    return config.claimInitiatedAt > 0n ? ClaimState.Pending : ClaimState.None;
   }, [config]);
 
   const inactivityCountdown = useCountdown(
@@ -162,7 +158,7 @@ export function HeirClaimPanel() {
                     label="Your heir share"
                     value={
                       isHeir && heirs
-                        ? `${splitToPercent(Number(splits?.[heirs.findIndex((h) => h.toLowerCase() === address?.toLowerCase()) ?? 0] ?? 0))}`
+                        ? `${splitToPercent(Number(splits?.[heirs.findIndex((h: string) => h.toLowerCase() === address?.toLowerCase()) ?? 0] ?? 0))}`
                         : "—"
                     }
                     className="sm:col-span-2"

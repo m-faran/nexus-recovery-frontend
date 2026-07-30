@@ -17,12 +17,7 @@ export function humanToSeconds(days: number, hours: number): bigint {
   return BigInt(Math.max(0, total));
 }
 
-export function secondsToHuman(seconds: bigint): { days: number; hours: number } {
-  const total = Number(seconds);
-  const days = Math.floor(total / 86_400);
-  const hours = Math.floor((total % 86_400) / 3_600);
-  return { days, hours };
-}
+
 
 export function formatDuration(seconds: bigint): string {
   if (seconds <= BigInt(0)) return "Elapsed";
